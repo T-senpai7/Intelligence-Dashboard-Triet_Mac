@@ -1,0 +1,31 @@
+{
+  "name": "intelligence-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Intelligence Dashboard - Vite + React",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 5173",
+    "start": "vite preview",
+    "lint": "echo \"No lint configured\""
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "vite",
+    "react",
+    "dashboard"
+  ],
+  "author": "",
+  "license": "MIT"
+}
