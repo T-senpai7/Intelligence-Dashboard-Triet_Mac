@@ -1,0 +1,151 @@
+export const groupLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+
+export const divideStudentsIntoGroups = (students, numberOfGroups = 15) => {
+  if (!students || students.length === 0) {
+    return {};
+  }
+
+  // Shuffle students randomly
+  const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+  
+  // Calculate students per group
+  const studentsPerGroup = Math.ceil(shuffledStudents.length / numberOfGroups);
+  
+  const groups = {};
+  
+  // Distribute students into groups
+  groupLabels.slice(0, numberOfGroups).forEach((label, index) => {
+    const startIndex = index * studentsPerGroup;
+    const endIndex = startIndex + studentsPerGroup;
+    groups[label] = shuffledStudents.slice(startIndex, endIndex);
+  });
+  
+  return groups;
+};
+
+export const balanceGroups = (groups) => {
+  const allStudents = [];
+  const groupNames = Object.keys(groups);
+  
+  // Collect all students
+  groupNames.forEach(groupName => {
+    allStudents.push(...groups[groupName]);
+  });
+  
+  // Redistribute evenly
+  const studentsPerGroup = Math.floor(allStudents.length / groupNames.length);
+  const remainder = allStudents.length % groupNames.length;
+  
+  const balancedGroups = {};
+  let studentIndex = 0;
+  
+  groupNames.forEach((groupName, index) => {
+    const groupSize = studentsPerGroup + (index < remainder ? 1 : 0);
+    balancedGroups[groupName] = allStudents.slice(studentIndex, studentIndex + groupSize);
+    studentIndex += groupSize;
+  });
+  
+  return balancedGroups;
+};
+
+export const getGroupStatistics = (groups) => {
+  const stats = {
+    totalGroups: 0,
+    totalStudents: 0,
+    averageGroupSize: 0,
+    minGroupSize: Infinity,
+    maxGroupSize: 0,
+    emptyGroups: 0
+  };
+  
+  const groupSizes = [];
+  
+  Object.values(groups).forEach(group => {
+    const size = group.length;
+    if (size > 0) {
+      stats.totalGroups++;
+      stats.totalStudents += size;
+      groupSizes.push(size);
+      stats.minGroupSize = Math.min(stats.minGroupSize, size);
+      stats.maxGroupSize = Math.max(stats.maxGroupSize, size);
+    } else {
+      stats.emptyGroups++;
+    }
+  });
+  
+  if (stats.totalGroups > 0) {
+    stats.averageGroupSize = (stats.totalStudents / stats.totalGroups).toFixed(1);
+  } else {
+    stats.minGroupSize = 0;
+    stats.averageGroupSize = 0;
+  }
+  
+  return stats;
+};
+
+export const exportGroupsToCSV = (groups) => {
+  const csvRows = ['Group,Student Name,Student ID'];
+  
+  Object.entries(groups).forEach(([groupName, members]) => {
+    if (members.length > 0) {
+      members.forEach(student => {
+        csvRows.push(`${groupName},${student.name},${student.studentId}`);
+      });
+    }
+  });
+  
+  return csvRows.join('\n');
+};
+
+export const exportGroupsToJSON = (groups) => {
+  const groupData = Object.entries(groups)
+    .filter(([_, members]) => members.length > 0)
+    .map(([groupName, members]) => ({
+      group: groupName,
+      memberCount: members.length,
+      members: members.map(student => ({
+        name: student.name,
+        studentId: student.studentId,
+        email: student.email || '',
+        processScore: student.processScore || 0
+      }))
+    }));
+  
+  return {
+    exportDate: new Date().toISOString(),
+    totalGroups: groupData.length,
+    totalStudents: groupData.reduce((sum, group) => sum + group.memberCount, 0),
+    groups: groupData
+  };
+};
+
+export const findStudentGroup = (groups, studentId) => {
+  for (const [groupName, members] of Object.entries(groups)) {
+    const student = members.find(member => member.studentId === studentId);
+    if (student) {
+      return { groupName, student };
+    }
+  }
+  return null;
+};
+
+export const moveStudentToGroup = (groups, studentId, fromGroup, toGroup) => {
+  const updatedGroups = { ...groups };
+  
+  // Find and remove student from current group
+  const studentIndex = updatedGroups[fromGroup].findIndex(
+    student => student.studentId === studentId
+  );
+  
+  if (studentIndex !== -1) {
+    const [student] = updatedGroups[fromGroup].splice(studentIndex, 1);
+    
+    // Add student to new group
+    if (!updatedGroups[toGroup]) {
+      updatedGroups[toGroup] = [];
+    }
+    updatedGroups[toGroup].push(student);
+  }
+  
+  return updatedGroups;
+};
